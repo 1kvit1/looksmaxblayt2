@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * Если CPM нет или API изменилось — всё молча отключается.
  *
  * Имена анимаций (создай их в редакторе CPM как "gesture/trigger" анимации):
- * looksmax_win, looksmax_lose, looksmax_rate
+ * looksmax_win, looksmax_lose, looksmax_rate, looksmax_face (значение 0..255 = рейтинг)
  */
 public final class CpmCompat {
     private static final Logger LOG = LoggerFactory.getLogger("looksmax-cpm");
@@ -41,14 +41,23 @@ public final class CpmCompat {
         }
     }
 
-    public static void play(ServerPlayer p, String anim) {
+    /**
+     * Отдаёт рейтинг в CPM как значение 0..255 для анимации "looksmax_face"
+     * (в редакторе CPM сделай её Value Layer, чтобы своя модель меняла лицо по рейтингу).
+     */
+    public static void updateFace(ServerPlayer p) {
+        int tenths = LooksUtil.get(p);
+        play(p, "looksmax_face", Math.round((tenths - LooksUtil.MIN) * 255f / (LooksUtil.MAX - LooksUtil.MIN)));
+    }
+
+    public static void play(ServerPlayer p, String anim, int value) {
         Object api = commonApi;
         if (api == null) return;
         try {
             Class<?> iface = Class.forName("com.tom.cpm.api.ICommonAPI");
             for (Method m : iface.getMethods()) {
                 if (m.getName().equals("playAnimation") && m.getParameterCount() == 4) {
-                    m.invoke(api, Player.class, p, anim, 1);
+                    m.invoke(api, Player.class, p, anim, value);
                     return;
                 }
             }

@@ -28,3 +28,10 @@ type="optional"
 versionRange="[0,)"
 ordering="AFTER"
 side="BOTH"
+
+[[dependencies.looksmax]]
+modId="emotecraft"
+type="optional"
+versionRange="[0,)"
+ordering="AFTER"
+side="BOTH"

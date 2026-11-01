@@ -1,1 +1,8 @@
-{"item.looksmax.mewing_gum":"Mewing Gum","item.looksmax.serum":"Looksmax Serum","item.looksmax.golden_mirror":"Golden Mirror"}
+{
+ "item.looksmax.mewing_gum": "Mewing Gum",
+ "item.looksmax.serum": "Looksmax Serum",
+ "item.looksmax.golden_mirror": "Golden Mirror",
+ "item.looksmax.cheek_hammer": "Cheek Hammer",
+ "key.looksmax.menu": "Open LooksMax menu",
+ "key.categories.looksmax": "LooksMax"
+}
