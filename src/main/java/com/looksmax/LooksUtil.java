@@ -4,6 +4,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public final class LooksUtil {
     private LooksUtil() {}
@@ -39,7 +40,16 @@ public final class LooksUtil {
     public static void set(Player p, int v) {
         v = Mth.clamp(v, MIN, MAX);
         p.setData(LooksMax.RATING.get(), v);
-        if (p instanceof ServerPlayer sp) CpmCompat.updateFace(sp);
+        if (p instanceof ServerPlayer sp) {
+            sync(sp);
+            CpmCompat.updateFace(sp);
+        }
+    }
+
+    /** Отправляет рейтинг и скулы игрока ему самому и всем, кто его видит (в 1.21.1 у вложений нет авто-синхронизации). */
+    public static void sync(ServerPlayer sp) {
+        PacketDistributor.sendToPlayersTrackingEntityAndSelf(sp,
+                new SyncPayload(sp.getId(), get(sp), sp.getData(LooksMax.CHEEK.get())));
     }
 
     public static void touch(ServerPlayer p) {

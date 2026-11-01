@@ -21,6 +21,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -37,7 +38,7 @@ public class LooksMax {
 
     /** Рейтинг в десятых долях: 10..100 = 1.0..10.0. 0 = ещё не инициализирован. Синхронизируется с клиентами. */
     public static final Supplier<AttachmentType<Integer>> RATING = ATTACH.register("rating",
-            () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).sync(ByteBufCodecs.VAR_INT).copyOnDeath().build());
+            () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).copyOnDeath().build());
 
     /** Игровое время последней активности (предмет или мог-батл). -1 = не задано. */
     public static final Supplier<AttachmentType<Long>> LAST_ACTIVE = ATTACH.register("last_active",
@@ -45,7 +46,7 @@ public class LooksMax {
 
     /** Уровень скул от молоточка 0..5. Синхронизируется с клиентами (рисуется в FaceLayer). */
     public static final Supplier<AttachmentType<Integer>> CHEEK = ATTACH.register("cheek",
-            () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).sync(ByteBufCodecs.VAR_INT).copyOnDeath().build());
+            () -> AttachmentType.builder(() -> 0).serialize(Codec.INT).copyOnDeath().build());
 
     public static final DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(Registries.SOUND_EVENT, MODID);
     public static final Supplier<SoundEvent> MOG_BATTLE = SOUNDS.register("mog_battle",
@@ -71,13 +72,33 @@ public class LooksMax {
         NeoForge.EVENT_BUS.addListener(Commands::register);
         NeoForge.EVENT_BUS.addListener(LooksMax::onTick);
         NeoForge.EVENT_BUS.addListener(LooksMax::onLogin);
+        NeoForge.EVENT_BUS.addListener(LooksMax::onTrack);
+        NeoForge.EVENT_BUS.addListener(LooksMax::onRespawn);
+        NeoForge.EVENT_BUS.addListener(LooksMax::onDimension);
         NeoForge.EVENT_BUS.addListener(MogManager::tick);
     }
 
     private static void onLogin(PlayerEvent.PlayerLoggedInEvent e) {
         if (e.getEntity() instanceof ServerPlayer sp) {
-            LooksUtil.get(sp); // инициализация + синхронизация
+            LooksUtil.get(sp); // инициализация
+            LooksUtil.sync(sp);
             CpmCompat.updateFace(sp);
+        }
+    }
+
+    private static void onRespawn(PlayerEvent.PlayerRespawnEvent e) {
+        if (e.getEntity() instanceof ServerPlayer sp) LooksUtil.sync(sp);
+    }
+
+    private static void onDimension(PlayerEvent.PlayerChangedDimensionEvent e) {
+        if (e.getEntity() instanceof ServerPlayer sp) LooksUtil.sync(sp);
+    }
+
+    /** Когда игрок начинает "видеть" другого игрока, отправляем ему его рейтинг и скулы. */
+    private static void onTrack(PlayerEvent.StartTracking e) {
+        if (e.getTarget() instanceof ServerPlayer target && e.getEntity() instanceof ServerPlayer viewer) {
+            PacketDistributor.sendToPlayer(viewer, new SyncPayload(target.getId(), LooksUtil.get(target),
+                    target.getData(CHEEK.get())));
         }
     }
 
@@ -102,6 +123,8 @@ public class LooksMax {
         PayloadRegistrar r = e.registrar("1");
         r.playToClient(EmotePayload.TYPE, EmotePayload.CODEC,
                 (payload, ctx) -> ctx.enqueueWork(EmoteClient::playRandom));
+        r.playToClient(SyncPayload.TYPE, SyncPayload.CODEC,
+                (payload, ctx) -> ctx.enqueueWork(() -> com.looksmax.client.ClientSync.apply(payload)));
     }
 
     private void tab(BuildCreativeModeTabContentsEvent e) {

@@ -35,6 +35,7 @@ public class CheekHammer extends Item {
             if (canCheek) sp.setData(LooksMax.CHEEK.get(), cheek + 1);
             if (canRate) LooksUtil.set(sp, Math.min(LooksUtil.ITEM_CAP, cur + 1));
             LooksUtil.touch(sp);
+            LooksUtil.sync(sp);
             level.playSound(null, sp.blockPosition(), SoundEvents.ANVIL_PLACE, SoundSource.PLAYERS, 0.6f, 1.6f);
             double s = LooksUtil.score(LooksUtil.get(sp));
             sp.displayClientMessage(Component.literal("Скулы: " + sp.getData(LooksMax.CHEEK.get()) + "/"
