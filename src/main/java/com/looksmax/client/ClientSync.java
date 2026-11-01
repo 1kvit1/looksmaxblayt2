@@ -6,7 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
-/** Применяет полученные от сервера данные к клиентской копии игрока (для отрисовки лица). */
+/** Применяет данные от сервера к клиентской копии игрока (для надписи над ником). */
 public final class ClientSync {
     private ClientSync() {}
 
@@ -16,7 +16,7 @@ public final class ClientSync {
         Entity e = mc.level.getEntity(p.entityId());
         if (e instanceof Player pl) {
             pl.setData(LooksMax.RATING.get(), p.rating());
-            pl.setData(LooksMax.CHEEK.get(), p.cheek());
+            pl.setData(LooksMax.FARMING.get(), p.farming());
         }
     }
 }

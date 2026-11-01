@@ -1,5 +1,9 @@
 {
-  "mog_battle": {
-    "sounds": [ { "name": "looksmax:mog_battle", "stream": true } ]
-  }
+  "mog_gozalo":   { "sounds": [ { "name": "looksmax:mog/gozalo",   "stream": true } ] },
+  "mog_revolver": { "sounds": [ { "name": "looksmax:mog/revolver", "stream": true } ] },
+  "mog_aura":     { "sounds": [ { "name": "looksmax:mog/aura",     "stream": true } ] },
+  "mog_y120":     { "sounds": [ { "name": "looksmax:mog/y120",     "stream": true } ] },
+  "mog_beamer":   { "sounds": [ { "name": "looksmax:mog/beamer",   "stream": true } ] },
+  "mog_s503":     { "sounds": [ { "name": "looksmax:mog/s503",     "stream": true } ] },
+  "mog_shawel":   { "sounds": [ { "name": "looksmax:mog/shawel",   "stream": true } ] }
 }
