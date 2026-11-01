@@ -30,7 +30,7 @@ public final class Commands {
         Component msg = Component.literal(target.getGameProfile().getName() + ": " + s + "/10 — ")
                 .append(Component.literal(LooksUtil.title(s)).withStyle(LooksUtil.color(s), ChatFormatting.BOLD));
         src.sendSuccess(() -> msg, false);
-        if (src.getEntity() instanceof ServerPlayer sp) CpmCompat.play(sp, "looksmax_rate");
+        if (src.getEntity() instanceof ServerPlayer sp) CpmCompat.play(sp, "looksmax_rate", 1);
         return 1;
     }
 }

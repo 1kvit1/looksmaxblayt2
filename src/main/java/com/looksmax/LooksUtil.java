@@ -1,28 +1,53 @@
 package com.looksmax;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 
 public final class LooksUtil {
     private LooksUtil() {}
 
+    /** Рейтинг хранится в десятых: 10 = 1.0, 100 = 10.0 */
+    public static final int MIN = 10;
+    public static final int MAX = 100;
+    /** Максимальный уровень скул от молоточка. */
+    public static final int MAX_CHEEK = 5;
+    /** Предметы поднимают рейтинг максимум до 9.0. Выше — только мог-батлы. */
+    public static final int ITEM_CAP = 90;
+    /** Награда/штраф за мог-батл: 0.2 */
+    public static final int MOG_STEP = 2;
+    /** Бездействие: через столько тиков без предметов/батлов рейтинг падает (12000 тиков = 10 минут). */
+    public static final long DECAY_TICKS = 12000L;
+    /** Падение за один период бездействия: 0.1 */
+    public static final int DECAY_STEP = 1;
+
+    private static int fallback(Player p) {
+        return 20 + Math.floorMod(p.getUUID().hashCode(), 35); // стартовый ролл 2.0..5.4
+    }
+
+    /** Рейтинг в десятых. На сервере инициализирует значение. На клиенте берёт синхронизированное. */
     public static int get(Player p) {
-        int v = p.getData(LooksMax.POINTS.get());
-        if (v < 0) { // стартовый "генетический ролл" 20..54, стабильный для игрока
-            v = 20 + Math.floorMod(p.getUUID().hashCode(), 35);
-            p.setData(LooksMax.POINTS.get(), v);
+        int v = p.getData(LooksMax.RATING.get());
+        if (v <= 0) {
+            v = fallback(p);
+            if (!p.level().isClientSide) p.setData(LooksMax.RATING.get(), v);
         }
         return v;
     }
 
     public static void set(Player p, int v) {
-        p.setData(LooksMax.POINTS.get(), Mth.clamp(v, 0, 100));
+        v = Mth.clamp(v, MIN, MAX);
+        p.setData(LooksMax.RATING.get(), v);
+        if (p instanceof ServerPlayer sp) CpmCompat.updateFace(sp);
     }
 
-    /** 0..100 очков -> оценка 1.0..10.0 */
-    public static double score(int pts) {
-        return Math.round((1 + pts * 0.09) * 10) / 10.0;
+    public static void touch(ServerPlayer p) {
+        p.setData(LooksMax.LAST_ACTIVE.get(), p.level().getGameTime());
+    }
+
+    public static double score(int tenths) {
+        return tenths / 10.0;
     }
 
     public static String title(double s) {

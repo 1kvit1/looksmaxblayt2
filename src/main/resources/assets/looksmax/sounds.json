@@ -1,0 +1,5 @@
+{
+  "mog_battle": {
+    "sounds": [ { "name": "looksmax:mog_battle", "stream": true } ]
+  }
+}
