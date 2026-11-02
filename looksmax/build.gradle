@@ -1,0 +1,22 @@
+plugins {
+    id 'java'
+    id 'net.neoforged.moddev' version '2.0.28'
+}
+version = '1.1.1'
+group = 'com.looksmax'
+base { archivesName = 'looksmax' }
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+neoForge {
+    version = '21.1.172'
+    runs {
+        client { client() }
+        server { server(); programArgument '--nogui' }
+    }
+    mods { looksmax { sourceSet sourceSets.main } }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('META-INF/neoforge.mods.toml') { expand version: project.version }
+}
